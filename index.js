@@ -1,14 +1,41 @@
-/**route file :index.js
- * 在server端：创建express app */
+/**root file :index.js
+ * 在server端：创建express app
+ * 
+ * server文件夹中的管理structure：routes,services,config,index 
+ * 
+ * 其他：module.exporst ⇆ require('./path')*/
 
-const express = require('express'); //get express from library
-const app=express(); //app是一个express func
+const express = require('express'); //导入express库
+const mongoose = require('mongoose');//导入mongoose
+const keys=require('./config/keys');//导入keys文件——如何加密并使用加密的数据？
+const cookieSession = require('cookie-session');//导入cookie-session库，访问cookie
+const passport = require('passport');//用passport处理cookie
 
-//app.get:创建一个路由处理器，传递http request 'get'给server，要求当访问'localhost:5000'+'/'（主页）时，执行res.send
-//其他express的method：get,post,put,delete,patch
-app.get('/', (req, res) => { 
-    res.send({bye:'ooo'}); //发送一个包含json文件{}的response
-});
+require('./models/User');//执行user.js；注意它和下面的执行顺序，必须先fetch models，然后拉取passport，因为在总体流程中，有先后执行的顺序
+require('./services/passport'); //执行passport.js
+
+
+//使用mongoose，创建一个address
+mongoose.connect(keys.mongoURI);
+
+
+const app=express(); //产生一个exporess对象
+require('./routes/authRoute')(app);//连接authRoute.js执行auth路由处理器：导入authRoute中的路由处理器函数，为其添加参数：app，
+
+/**app.use(中间件middleware)
+ * 在处理request被传入路由之前中需要进行的预处理：使用cookie，用cookie进行验证
+ */
+//让express上，使用……
+app.use( //cookie，发送给req.session
+    cookieSession({ /**用express-session：储存更多的数据 */
+        maxAge:30 * 24 * 60 *60 *1000, //浏览器中在自动过期前最多存30天
+        keys:[keys.cookieKey]//注意keys要加密，只在keys.js文件中写入
+    })
+);
+//让passport访问cookiesession（req.session），提取cookie进行验证
+app.use(passport.initialize());
+app.use(passport.session());
+
 
 //express告诉node监听哪个端口（本地端口，或用render部署应用程序分配的端口）
 //执行：1.运行node index.js   2.打开http://localhost:5000/即可查看
@@ -20,7 +47,7 @@ app.listen(PORT);
  * 2.明确node environment：检查npm和node的version(node/npm -v)，然后写入package.json
  * 3.明确怎么启动应用程序：执行一个start脚本：package.json-scripts-start
  * 4.创建 .gitignore文件：写入要忽略的内容，如node_modules。确保部署应用的时候不commit所有自动下载的不要用的dependency
- * 5.在render部署web service：https://www.udemy.com/course/node-with-react-fullstack-web-development/learn/lecture/39244222#questions/18540614
+ * 5.在render部署web service
  * 注意：每次commit push到git repository后，render都会重新构建和部署
  * 
  * 再部署：
