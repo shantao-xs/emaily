@@ -20,10 +20,11 @@ mongoose.connect(keys.mongoURI);
 
 
 const app=express(); //产生一个exporess对象
-require('./routes/authRoute')(app);//连接authRoute.js执行auth路由处理器：导入authRoute中的路由处理器函数，为其添加参数：app，
 
-/**app.use(中间件middleware)
- * 在处理request被传入路由之前中需要进行的预处理：使用cookie，用cookie进行验证
+
+
+/**中间件middleware
+ * 在处理request被传入路由之前中需要用passport进行的预处理：使用cookie，用cookie进行验证
  */
 //让express上，使用……
 app.use( //cookie，发送给req.session
@@ -35,6 +36,13 @@ app.use( //cookie，发送给req.session
 //让passport访问cookiesession（req.session），提取cookie进行验证
 app.use(passport.initialize());
 app.use(passport.session());
+
+
+
+/**进入route handler环节 */
+require('./routes/authRoute')(app);//连接authRoute.js执行auth路由处理器：导入authRoute中的路由处理器函数，为其添加参数：app
+
+
 
 
 //express告诉node监听哪个端口（本地端口，或用render部署应用程序分配的端口）
