@@ -9,18 +9,30 @@
   },
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "backend-server": "nodemon index.js",
+    "frontend-client": "npm run start --prefix client",
+    "dev": "concurrently \"npm run backend-server\" \"npm run frontend-client\""
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "body-parser": "^1.20.2",
+    "concurrently": "^8.2.2",
     "cookie-session": "^2.0.0",
     "express": "^4.18.2",
+    "http-proxy-middleware": "^2.0.6",
+    "https-proxy-agent": "^7.0.2",
+    "materialize-css": "^1.0.0-rc.2",
     "mongoose": "^8.0.2",
     "nodemon": "^3.0.1",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-oauth2": "^1.7.0",
-    "save": "^2.9.0"
+    "react-stripe-checkout": "^2.6.3",
+    "save": "^2.9.0",
+    "stripe": "^14.8.0"
+  },
+  "devDependencies": {
+    "prettier": "3.1.0"
   }
 }

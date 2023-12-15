@@ -1,4 +1,6 @@
-/**root file :index.js
+/**后端底层：nodeJS
+ * 
+ * root file :index.js
  * 在server端：创建express app
  * 
  * server文件夹中的管理structure：routes,services,config,index 
@@ -10,6 +12,7 @@ const mongoose = require('mongoose');//导入mongoose
 const keys=require('./config/keys');//导入keys文件——如何加密并使用加密的数据？
 const cookieSession = require('cookie-session');//导入cookie-session库，访问cookie
 const passport = require('passport');//用passport处理cookie
+const bodyParser = require('body-parser');
 
 require('./models/User');//执行user.js；注意它和下面的执行顺序，必须先fetch models，然后拉取passport，因为在总体流程中，有先后执行的顺序
 require('./services/passport'); //执行passport.js
@@ -19,13 +22,16 @@ require('./services/passport'); //执行passport.js
 mongoose.connect(keys.mongoURI);
 
 
-const app=express(); //产生一个exporess对象
+const app=express(); //产生一个express对象
+
+
 
 
 
 /**中间件middleware
  * 在处理request被传入路由之前中需要用passport进行的预处理：使用cookie，用cookie进行验证
  */
+app.use(bodyParser.json()); //不懂就查对应包的docs
 //让express上，使用……
 app.use( //cookie，发送给req.session
     cookieSession({ /**用express-session：储存更多的数据 */
@@ -41,14 +47,16 @@ app.use(passport.session());
 
 /**进入route handler环节 */
 require('./routes/authRoute')(app);//连接authRoute.js执行auth路由处理器：导入authRoute中的路由处理器函数，为其添加参数：app
-
+require('./routes/billingRoutes')(app);
 
 
 
 //express告诉node监听哪个端口（本地端口，或用render部署应用程序分配的端口）
 //执行：1.运行node index.js   2.打开http://localhost:5000/即可查看
 const PORT =process.env.PORT || 5000; //查看底层环境，获取动态端口，render会分配端口给它。如果是开发环境，则使用localhost:5000
-app.listen(PORT); 
+app.listen(PORT,()=>{
+    console.log(`Server is running on port ${PORT}`);
+}); 
 
 /**部署应用程序
  * 1.动态端口绑定：render上监听端口

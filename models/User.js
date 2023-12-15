@@ -9,7 +9,8 @@ const Schema = mongoose.Schema;//创建一个变量，分配mongoose的schema属
 
 //画一个模板schema：设定每个collection中的各种属性及其data type
 const userSchema = new Schema({
-    googleId:String//从哪里获得googleId？在google auth之后，跳转回callback url时会返回一个profile，内含googleId，需要引用它--passport.js
+    googleId:String,//从哪里获得googleId？在google auth之后，跳转回callback url时会返回一个profile，内含googleId，需要引用它--passport.js
+    credits:{type:Number, default:0} //设置类型和默认值
 });
 
 
