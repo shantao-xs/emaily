@@ -49,7 +49,17 @@ app.use(passport.session());
 require('./routes/authRoute')(app);//连接authRoute.js执行auth路由处理器：导入authRoute中的路由处理器函数，为其添加参数：app
 require('./routes/billingRoutes')(app);
 
+//如果是prod mode，则额外需要增加判断：是express的route还是前端react的route？是后者则需要express把这个文件转发给react前端处理
+if(process.env.NODE_ENV){
+    //在build的静态文件里找：如果express找得到，则直接调用该route
+    app.use(express.static('/client/build'));
 
+    //如果express找不到，则把*绝对路径*转发给react；这里通过*来搜索所有没有通过上条检查的route req
+    const path = require('path');
+    app.get('*',(req,res)=>{
+        res.sendFile(path.resolve(__dirname,'client','build','index.html'));
+    })
+};
 
 //express告诉node监听哪个端口（本地端口，或用render部署应用程序分配的端口）
 //执行：1.运行node index.js   2.打开http://localhost:5000/即可查看

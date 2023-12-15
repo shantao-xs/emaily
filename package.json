@@ -11,7 +11,8 @@
     "start": "node index.js",
     "backend-server": "nodemon index.js",
     "frontend-client": "npm run start --prefix client",
-    "dev": "concurrently \"npm run backend-server\" \"npm run frontend-client\""
+    "dev": "concurrently \"npm run backend-server\" \"npm run frontend-client\"",
+    "render-postbuild":"NPM_CONFIG_PRODUCTION=false npm install --prefix client && npm run build"
   },
   "author": "",
   "license": "ISC",
