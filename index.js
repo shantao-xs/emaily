@@ -14,8 +14,11 @@ const cookieSession = require('cookie-session');//导入cookie-session库，访�
 const passport = require('passport');//用passport处理cookie
 const bodyParser = require('body-parser');
 
-require('./models/User');//执行user.js；注意它和下面的执行顺序，必须先fetch models，然后拉取passport，因为在总体流程中，有先后执行的顺序
-require('./services/passport'); //执行passport.js
+//拉取所有的db model；注意它和下面的执行顺序，必须先fetch models，然后拉取passport，因为在总体流程中，有先后执行的顺序
+require('./models/User');
+require('./models/Survey');
+//执行passport.js
+require('./services/passport'); 
 
 
 //使用mongoose，创建一个address
@@ -48,6 +51,7 @@ app.use(passport.session());
 /**进入route handler环节 */
 require('./routes/authRoute')(app);//连接authRoute.js执行auth路由处理器：导入authRoute中的路由处理器函数，为其添加参数：app
 require('./routes/billingRoutes')(app);
+require('./routes/surveyRoutes')(app);
 
 //如果是prod mode，则额外需要增加判断：是express的route还是前端react的route？是后者则需要express把这个文件转发给react前端处理
 if(process.env.NODE_ENV){

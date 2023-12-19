@@ -15,7 +15,7 @@ module.exports=(app)=>{
             amount: 500,
             currency: 'usd',
             description: 'recharge for your account',
-            source:'req.body.id'
+            source:req.body.id
         });
         //把这个充值记录更新到DB，联动./models/Users
         req.user.credits+=5;//执行+5

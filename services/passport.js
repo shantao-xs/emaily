@@ -1,11 +1,15 @@
-/**存放所有跟services-passport的配置相关的代码 */
+/**存放所有跟services-passport的配置相关的代码
+ * passport会自动创建一个唯一标识符id，不需要显式创建id这个属性
+ */
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy; //导入passport和谷歌的strategy
 const keys=require('../config/keys.js');//导入keys文件以引用googleClientID & Secret。注意这里需要返回上级文件夹去找config
+
+//引用users.js中用mongoose创建的user model
 const mongoose = require('mongoose');
+const User = mongoose.model('users'); 
 
-const User = mongoose.model('users'); //引用users.js中用mongoose创建的新model
-
+const HttpsProxyAgent = require('https-proxy-agent');
 
 
 //创建一个googlestrategy的新实例，让passport可以处理这个特定的auth供应商
@@ -17,12 +21,8 @@ passport.use(new GoogleStrategy({
     callbackURL:'/auth/google/callback',  //注意，由于render proxy不被信任，故会跳转到http而非https并报错，所以要手动设置信任render proxy
     proxy:true
     //回调url：当用户授权google账户后应跳转回此url
-    //注意:需再次向google验证本人身份，才能被允许获得用户的资讯并让用户redirect to原址-->怎么做：在google cloud-credentials中，在Authorized redirect URIs填入该target url，方可被google放行
     },
 
-    //注意凡和DB交互都要用I/O异步操作（promise 或 async）
-    //async的部分详见笔记本
-    //注意：GoogleStrategy规定了每个参数的顺序，所以不要把顺序搞混：accessToken, refreshToken（访问令牌过期后可以自动更新）, profile（含有unique google id),action（这里是done）
     /**查找User DB中是否有记录
      * 异步处理：在与DB交互时使用I/O操作，来提高程序执行响应能力 
      */
@@ -40,23 +40,9 @@ passport.use(new GoogleStrategy({
             done(null,newUser);
         }
     }));
-          
-    /*promise法：
-    (accessToken,refreshToken,profile,done)=>{
-        User.findOne({googleId: profile.id})
-            .then((existingUser)=>{
-                if(existingUser){
-                    done(null,existingUser); 
-                }else{
-                    //创建新用户new instance
-                    new User({googleId: profile.id}).save()
-                        .then(user=>done(null,user)); 
-                }
-    });
-    */
 
 
-        
+
 //当DB为每个user生成唯一id后（即mongoose.model中每个user(collection)的属性user.id -> 将这串id通过serializeUser方法序列化为user专属的标识符token/cookie（此时token=user.id）
 passport.serializeUser((user,done)=>{
     done(null,user.id);
@@ -66,15 +52,6 @@ passport.serializeUser((user,done)=>{
 
 //当user把token传给服务器后 -> 将这串token通过deserializeUser转换为用户信息（如user name），然后去DB找到对应的user collection 
 
-    /**promise法：
-     * passport.deserializeUser((id,done)=>{
-     *      User.findById(id)
-     *          .then(user=>{done(null,user);})//这个user就是user model
-     * });
-     */
-
-
-    /**async法： */
      passport.deserializeUser(
         async (id,done)=>{
             const user = await User.findById(id);
